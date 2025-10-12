@@ -497,7 +497,7 @@ This project is licensed under the MIT License.
 
 ## 📧 Support
 
-For support, email: support@edgetrade.com
+For support, email: siamhossain518@gmail.com
 
 ---
 
