@@ -211,13 +211,72 @@ docker run -d \
   postgres:14-alpine
 ```
 
-### 6. Run the application
+### 6. Run Database Migration (if needed)
+
+If you're upgrading from a previous version, run the email verification migration:
+
+```bash
+python scripts/migrate_email_verification.py
+```
+
+### 7. Run the application
 
 ```bash
 python main.py
 ```
 
 The API will be available at: `http://localhost:8000`
+
+## 📧 Email Verification Workflow
+
+EdgeTrade includes a complete email verification system for secure user registration:
+
+### 1. User Registration
+```bash
+POST /api/v1/auth/register
+{
+  "email": "user@example.com",
+  "username": "trader123",
+  "password": "securepassword",
+  "full_name": "John Doe",
+  "phone": "+1234567890",
+  "country": "USA"
+}
+```
+
+**Response:** `201 Created` with `is_verified: false`
+
+### 2. Email Verification
+- Verification email is automatically sent to user's email
+- Email contains verification link: `http://localhost:8000/api/v1/auth/verify-email?token=...`
+- User clicks link to verify email address
+
+### 3. Login After Verification
+```bash
+POST /api/v1/auth/login
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response:** JWT tokens for authenticated access
+
+### 4. Create Trading Account
+```bash
+POST /api/v1/accounts/
+Authorization: Bearer <jwt_token>
+{
+  "account_name": "My Trading Account",
+  "account_type": "demo",
+  "currency": "USD",
+  "leverage": 100,
+  "initial_balance": 10000.0
+}
+```
+
+### Email Configuration
+Configure SMTP settings in `.env` file for email delivery. Gmail App Passwords are recommended for production use.
 
 ## 📚 API Documentation
 
@@ -230,9 +289,11 @@ Once the application is running, access the interactive API documentation:
 ### Key Endpoints
 
 #### Authentication
-- `POST /api/v1/auth/register` - Register new user
+- `POST /api/v1/auth/register` - Register new user (with email verification)
 - `POST /api/v1/auth/login` - User login
 - `POST /api/v1/auth/refresh` - Refresh access token
+- `GET /api/v1/auth/verify-email` - Verify email address
+- `POST /api/v1/auth/logout` - User logout
 
 #### Trading Accounts
 - `POST /api/v1/accounts/` - Create trading account
@@ -329,6 +390,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 SIMULATE_TRADING=True
 AUTO_LIQUIDATION_MARGIN_LEVEL=20
 MARGIN_CALL_LEVEL=50
+
+# Email Verification
+REQUIRE_EMAIL_VERIFICATION=True
+SMTP_ENABLED=True
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=your-email@gmail.com
+SMTP_TLS=True
 ```
 
 ## 🔗 Broker Integration
