@@ -80,7 +80,7 @@ A professional-grade, scalable Forex trading platform built with FastAPI. Simila
 ### 7. Admin Panel APIs
 - ✅ View/manage all users and accounts
 - ✅ Activate/deactivate user accounts
-- ✅ Manually adjust account balances (for MVP testing)
+- ✅ Manually adjust account balances
 - ✅ System-wide metrics dashboard
 - ✅ Audit logs for all critical actions
 - ✅ Role-based access control
@@ -122,8 +122,8 @@ EdgeTrade-fastAPI/
 │   │       └── admin.py        # Admin panel
 │   ├── brokers/                # Broker abstraction layer
 │   │   ├── base.py             # Abstract base class
-│   │   ├── simulated.py        # Simulated broker (MVP)
-│   │   └── mt5.py              # MT5 integration (future)
+│   │   ├── simulated.py        # Simulated broker
+│   │   └── mt5.py              # MT5 integration
 │   ├── core/                   # Core functionality
 │   │   ├── config.py           # Configuration
 │   │   ├── security.py         # Authentication & security
@@ -428,8 +428,8 @@ class MT5Broker(BaseBroker):
     # ... implement other methods
 ```
 
-Supported brokers (planned):
-- ✅ Simulated (MVP)
+Supported brokers:
+- ✅ Simulated
 - 🔄 MetaTrader 5 (MT5)
 - 🔄 OANDA
 - 🔄 Binance
@@ -482,14 +482,6 @@ docker-compose up -d
 - CORS configuration
 - Role-based access control
 
-## 📝 MVP Note
-
-For MVP, the system **simulates trading** without connecting to a real broker. The price feed and order execution are simulated. This allows you to:
-
-- Test the entire platform
-- Demonstrate functionality
-- Develop frontend integration
-- **Later**: Plug in real broker APIs without changing core logic
 
 ## 🤝 Contributing
 
