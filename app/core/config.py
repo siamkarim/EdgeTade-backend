@@ -102,12 +102,12 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: List[str] = ["jpg", "jpeg", "png", "pdf"]
     
     # ========== Email Settings (Optional) ==========
-    SMTP_ENABLED: bool = False
-    SMTP_HOST: Optional[str] = None
+    SMTP_ENABLED: bool = True
+    SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    SMTP_FROM: Optional[str] = "noreply@edgetrade.com"
+    SMTP_USER: str = "siamhossain518@gmail.com"
+    SMTP_PASSWORD: str = "kvdz kzcm trve yjrt"
+    SMTP_FROM: str = "siamhossain518@gmail.com"
     SMTP_TLS: bool = True
     
     # ========== Broker API Integration (Future) ==========
@@ -140,7 +140,7 @@ class Settings(BaseSettings):
     ENABLE_ADMIN_PANEL: bool = True
     ENABLE_API_DOCS: bool = True
     ENABLE_ANALYTICS: bool = True
-    REQUIRE_EMAIL_VERIFICATION: bool = False
+    REQUIRE_EMAIL_VERIFICATION: bool = True
     REQUIRE_KYC: bool = False  # Know Your Customer
     
     # ========== Market Data ==========

@@ -31,6 +31,10 @@ class User(Base):
     two_factor_enabled = Column(Boolean, default=False)
     two_factor_secret = Column(String(255), nullable=True)
     
+    # Email verification
+    email_verification_token = Column(String(255), nullable=True)
+    email_verification_expires = Column(DateTime(timezone=True), nullable=True)
+    
     # KYC
     kyc_status = Column(String(20), default="pending")  # pending, approved, rejected
     kyc_submitted_at = Column(DateTime(timezone=True), nullable=True)

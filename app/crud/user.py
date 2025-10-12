@@ -4,7 +4,8 @@ User CRUD operations
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
@@ -33,6 +34,10 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
     """Create new user"""
     hashed_password = get_password_hash(user_data.password)
     
+    # Generate email verification token
+    verification_token = secrets.token_urlsafe(32)
+    verification_expires = datetime.utcnow() + timedelta(hours=24)
+    
     db_user = User(
         email=user_data.email,
         username=user_data.username,
@@ -40,6 +45,9 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
         full_name=user_data.full_name,
         phone=user_data.phone,
         country=user_data.country,
+        email_verification_token=verification_token,
+        email_verification_expires=verification_expires,
+        is_verified=False,  # User needs to verify email
     )
     
     db.add(db_user)
@@ -72,4 +80,32 @@ async def get_all_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> li
     """Get all users (admin function)"""
     result = await db.execute(select(User).offset(skip).limit(limit))
     return result.scalars().all()
+
+
+async def get_user_by_verification_token(db: AsyncSession, token: str) -> Optional[User]:
+    """Get user by email verification token"""
+    result = await db.execute(
+        select(User).where(
+            User.email_verification_token == token,
+            User.email_verification_expires > datetime.utcnow()
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def verify_user_email(db: AsyncSession, user_id: int) -> Optional[User]:
+    """Mark user email as verified"""
+    stmt = (
+        update(User)
+        .where(User.id == user_id)
+        .values(
+            is_verified=True,
+            email_verification_token=None,
+            email_verification_expires=None
+        )
+        .returning(User)
+    )
+    result = await db.execute(stmt)
+    await db.commit()
+    return result.scalar_one_or_none()
 
