@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     WORKERS: int = 1  # Number of worker processes (production)
     
     # ========== Database Settings ==========
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:admin@localhost:5432/edgetrade_db"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/database"
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 10
     DB_POOL_TIMEOUT: int = 30
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     CACHE_EXPIRE_SECONDS: int = 300  # 5 minutes
     
     # ========== CORS (Cross-Origin Resource Sharing) ==========
-    CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:8080","http://127.0.0.1:3000"]'
+    CORS_ORIGINS: str = '["*"]'
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: List[str] = ["*"]
     CORS_ALLOW_HEADERS: List[str] = ["*"]
