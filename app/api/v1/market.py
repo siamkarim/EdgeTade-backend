@@ -39,7 +39,7 @@ async def get_symbol_price(
 @router.get("/prices")
 async def get_all_prices(
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Dict[str, float]]:
+):
     """Get current prices for all symbols"""
     return price_feed_service.get_all_prices()
 

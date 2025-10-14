@@ -94,7 +94,15 @@ class PriceFeedService:
     
     def get_all_prices(self) -> Dict[str, Dict[str, float]]:
         """Get all current prices"""
-        return self.current_prices
+        # Convert datetime objects to strings for JSON serialization
+        result = {}
+        for symbol, price_data in self.current_prices.items():
+            result[symbol] = {
+                "bid": price_data["bid"],
+                "ask": price_data["ask"],
+                "timestamp": price_data["timestamp"].isoformat() if isinstance(price_data["timestamp"], datetime) else str(price_data["timestamp"])
+            }
+        return result
 
 
 # Singleton instance
