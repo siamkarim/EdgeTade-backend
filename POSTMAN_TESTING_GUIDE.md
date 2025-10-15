@@ -62,7 +62,7 @@ POST /api/v1/auth/send-verification-code
 POST /api/v1/auth/verify-email-code
 {
   "email": "{{test_email}}",
-  "verification_code": "{{verification_code}}"
+  "code": "{{verification_code}}"
 }
 ```
 
