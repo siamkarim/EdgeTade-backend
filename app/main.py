@@ -26,15 +26,80 @@ async def lifespan(app: FastAPI):
     pass
 
 
-# Create FastAPI app
+# Create FastAPI app with comprehensive documentation
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Professional-grade Forex trading platform API",
+    description="""
+    ## 🚀 EdgeTrade Trading Platform API
+
+    A professional-grade Forex trading platform with real-time market data, order management, and risk management.
+
+    ### 🔑 Authentication
+    Most endpoints require JWT authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    ### 📊 Key Features
+    - **User Management**: Registration, login, email verification, password reset
+    - **Trading Accounts**: Create and manage demo/live trading accounts
+    - **Order Management**: Place market, limit, stop orders with risk management
+    - **Real-time Data**: Live market prices and WebSocket updates
+    - **Risk Management**: Margin calculation, stop loss, take profit
+    - **Audit Logging**: Complete transaction history and security logs
+
+    ### 🎯 Getting Started
+    1. **Register**: Create a new user account
+    2. **Verify Email**: Complete email verification with 6-digit code
+    3. **Login**: Get JWT access and refresh tokens
+    4. **Create Account**: Set up a trading account
+    5. **Start Trading**: Place orders and monitor positions
+
+    ### 📈 Trading Flow
+    1. Get market symbols: `GET /api/v1/market/symbols`
+    2. Get current prices: `GET /api/v1/market/price/{symbol}`
+    3. Place order: `POST /api/v1/orders/`
+    4. Monitor positions: `GET /api/v1/orders/?account_id={id}`
+    5. View trades: `GET /api/v1/trades/?account_id={id}`
+
+    ### 🔒 Security
+    - JWT-based authentication
+    - Email verification required
+    - Rate limiting enabled
+    - Audit logging for all actions
+    - CORS protection
+
+    ### 📱 WebSocket Support
+    Connect to `/ws` for real-time updates:
+    - Market price updates
+    - Order status changes
+    - Account balance updates
+    - Trade notifications
+    """,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
     lifespan=lifespan,
+    contact={
+        "name": "EdgeTrade Support",
+        "email": "support@edgetrade.com",
+        "url": "https://edgetrade.com/support",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    servers=[
+        {
+            "url": "https://yourdomain.com",
+            "description": "Production server"
+        },
+        {
+            "url": "http://localhost:8000",
+            "description": "Development server"
+        }
+    ],
 )
 
 # CORS Middleware

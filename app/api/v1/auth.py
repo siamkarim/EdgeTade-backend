@@ -27,13 +27,89 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", 
+    response_model=UserResponse, 
+    status_code=status.HTTP_201_CREATED,
+    summary="Register New User",
+    description="""
+    Register a new user account with the EdgeTrade platform.
+    
+    **Required Fields:**
+    - `email`: Valid email address (must be unique)
+    - `username`: Unique username (3-50 characters)
+    - `password`: Strong password (min 8 characters)
+    
+    **Optional Fields:**
+    - `first_name`: User's first name
+    - `last_name`: User's last name
+    - `phone`: Phone number with country code
+    - `country`: Country of residence
+    - `id_number`: ID number (optional)
+    - `date_of_birth`: Date of birth (YYYY-MM-DD format)
+    
+    **Response:**
+    Returns user information with `is_verified: false`. User must verify email before login.
+    
+    **Email Verification:**
+    After registration, a 6-digit verification code is sent to the user's email.
+    Use `/send-verification-code` and `/verify-email-code` to complete verification.
+    """,
+    responses={
+        201: {
+            "description": "User registered successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": 1,
+                        "email": "user@example.com",
+                        "username": "trader123",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "phone": "+1234567890",
+                        "country": "USA",
+                        "id_number": "123456789",
+                        "date_of_birth": "1990-01-01T00:00:00Z",
+                        "is_active": True,
+                        "is_verified": False,
+                        "is_admin": False,
+                        "two_factor_enabled": False,
+                        "kyc_status": "pending",
+                        "created_at": "2025-01-15T10:30:00Z",
+                        "last_login": None
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Registration failed",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "email_exists": {
+                            "summary": "Email already registered",
+                            "value": {"detail": "Email already registered"}
+                        },
+                        "username_taken": {
+                            "summary": "Username already taken",
+                            "value": {"detail": "Username already taken"}
+                        },
+                        "invalid_date": {
+                            "summary": "Invalid date format",
+                            "value": {"detail": "Invalid date of birth format. Use YYYY-MM-DD."}
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 async def register(
     user_data: UserRegister,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register a new user"""
+    """Register a new user account"""
     
     # Check if user already exists
     existing_user = await user_crud.get_user_by_email(db, user_data.email)
@@ -98,13 +174,71 @@ async def register(
     return new_user
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login", 
+    response_model=Token,
+    summary="User Login",
+    description="""
+    Authenticate user and get JWT tokens for API access.
+    
+    **Required Fields:**
+    - `email`: User's email address
+    - `password`: User's password
+    
+    **Response:**
+    Returns access token and refresh token. Access token expires in 30 minutes.
+    
+    **Token Usage:**
+    Include the access token in the Authorization header for protected endpoints:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+    
+    **Email Verification:**
+    Users must verify their email before they can log in.
+    """,
+    responses={
+        200: {
+            "description": "Login successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer"
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Authentication failed",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "invalid_credentials": {
+                            "summary": "Invalid email or password",
+                            "value": {"detail": "Incorrect email or password"}
+                        },
+                        "email_not_verified": {
+                            "summary": "Email not verified",
+                            "value": {"detail": "Please verify your email address before logging in. Check your inbox for verification email."}
+                        },
+                        "account_inactive": {
+                            "summary": "Account inactive",
+                            "value": {"detail": "Account is inactive"}
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 async def login(
     credentials: UserLogin,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """User login"""
+    """Authenticate user and return JWT tokens"""
     
     # Get user by email
     user = await user_crud.get_user_by_email(db, credentials.email)
