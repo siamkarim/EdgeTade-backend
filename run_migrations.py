@@ -19,8 +19,8 @@ async def run_migration(script_name, description):
     try:
         # Import and run the migration
         if script_name == "migrate_name_fields":
-            from scripts.migrate_name_fields import run_migration
-            await run_migration()
+            from scripts.migrate_name_fields import migrate_name_fields
+            await migrate_name_fields()
         elif script_name == "migrate_figma_fields":
             from scripts.migrate_figma_fields import run_migration
             await run_migration()
