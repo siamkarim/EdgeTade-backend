@@ -10,9 +10,12 @@ class UserRegister(BaseModel):
     email: EmailStr
     username: str
     password: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
     country: Optional[str] = None
+    id_number: Optional[str] = None
+    date_of_birth: Optional[str] = None  # Will be converted to datetime
 
 
 class UserLogin(BaseModel):

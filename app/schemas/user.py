@@ -10,10 +10,13 @@ class UserBase(BaseModel):
     """Base user schema"""
     email: EmailStr
     username: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
     country: Optional[str] = None
     timezone: Optional[str] = None
+    id_number: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
 
 
 class UserCreate(UserBase):
@@ -23,11 +26,14 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     """User update schema"""
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
     country: Optional[str] = None
     timezone: Optional[str] = None
     profile_picture: Optional[str] = None
+    id_number: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
 
 
 class UserResponse(UserBase):
@@ -48,4 +54,35 @@ class UserResponse(UserBase):
 class UserProfile(UserResponse):
     """Extended user profile schema"""
     pass
+
+
+# Password Reset Schemas
+class PasswordResetRequest(BaseModel):
+    """Password reset request schema"""
+    email: EmailStr
+
+
+class PasswordResetVerify(BaseModel):
+    """Password reset verification schema"""
+    email: EmailStr
+    code: str
+
+
+class PasswordResetUpdate(BaseModel):
+    """Password reset update schema"""
+    email: EmailStr
+    code: str
+    new_password: str
+
+
+# Email Verification Schemas
+class EmailVerificationRequest(BaseModel):
+    """Email verification request schema"""
+    email: EmailStr
+
+
+class EmailVerificationVerify(BaseModel):
+    """Email verification schema"""
+    email: EmailStr
+    code: str
 

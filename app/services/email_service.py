@@ -81,6 +81,116 @@ class EmailService:
             logger.error(f"Failed to send verification email: {e}")
             return False
     
+    async def send_verification_code_email(
+        self, 
+        to_email: str, 
+        verification_code: str,
+        username: str
+    ) -> bool:
+        """Send email verification code"""
+        if not self.enabled:
+            logger.warning("SMTP is disabled, skipping email verification code")
+            return True
+        
+        try:
+            # Create email content
+            subject = "Your EdgeTrade Verification Code"
+            
+            html_content = f"""
+            <html>
+            <body>
+                <h2>EdgeTrade Verification Code</h2>
+                <p>Hello {username},</p>
+                <p>Your verification code is:</p>
+                <h1 style="color: #4CAF50; font-size: 32px; letter-spacing: 5px; text-align: center; background-color: #f0f0f0; padding: 20px; border-radius: 10px; margin: 20px 0;">{verification_code}</h1>
+                <p>Enter this code in the verification form to complete your registration.</p>
+                <p>This code will expire in 10 minutes.</p>
+                <p>If you didn't request this code, please ignore this email.</p>
+                <br>
+                <p>Best regards,<br>EdgeTrade Team</p>
+            </body>
+            </html>
+            """
+            
+            text_content = f"""
+            EdgeTrade Verification Code
+            
+            Hello {username},
+            
+            Your verification code is: {verification_code}
+            
+            Enter this code in the verification form to complete your registration.
+            
+            This code will expire in 10 minutes.
+            
+            If you didn't request this code, please ignore this email.
+            
+            Best regards,
+            EdgeTrade Team
+            """
+            
+            # Send email
+            return await self._send_email(to_email, subject, text_content, html_content)
+            
+        except Exception as e:
+            logger.error(f"Failed to send verification code email: {e}")
+            return False
+    
+    async def send_password_reset_code_email(
+        self, 
+        to_email: str, 
+        reset_code: str,
+        username: str
+    ) -> bool:
+        """Send password reset code email"""
+        if not self.enabled:
+            logger.warning("SMTP is disabled, skipping password reset code")
+            return True
+        
+        try:
+            # Create email content
+            subject = "Your EdgeTrade Password Reset Code"
+            
+            html_content = f"""
+            <html>
+            <body>
+                <h2>Password Reset Code</h2>
+                <p>Hello {username},</p>
+                <p>You requested a password reset. Your reset code is:</p>
+                <h1 style="color: #4CAF50; font-size: 32px; letter-spacing: 5px; text-align: center; background-color: #f0f0f0; padding: 20px; border-radius: 10px; margin: 20px 0;">{reset_code}</h1>
+                <p>Enter this code in the password reset form to set a new password.</p>
+                <p>This code will expire in 15 minutes.</p>
+                <p>If you didn't request a password reset, please ignore this email.</p>
+                <br>
+                <p>Best regards,<br>EdgeTrade Team</p>
+            </body>
+            </html>
+            """
+            
+            text_content = f"""
+            Password Reset Code
+            
+            Hello {username},
+            
+            You requested a password reset. Your reset code is: {reset_code}
+            
+            Enter this code in the password reset form to set a new password.
+            
+            This code will expire in 15 minutes.
+            
+            If you didn't request a password reset, please ignore this email.
+            
+            Best regards,
+            EdgeTrade Team
+            """
+            
+            # Send email
+            return await self._send_email(to_email, subject, text_content, html_content)
+            
+        except Exception as e:
+            logger.error(f"Failed to send password reset code email: {e}")
+            return False
+    
     async def _send_email(
         self, 
         to_email: str, 

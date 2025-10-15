@@ -13,7 +13,11 @@ from app.core.security import (
     get_current_user,
 )
 from app.schemas.auth import UserRegister, UserLogin, Token, RefreshTokenRequest
-from app.schemas.user import UserResponse, UserCreate
+from app.schemas.user import (
+    UserResponse, UserCreate, 
+    PasswordResetRequest, PasswordResetVerify, PasswordResetUpdate,
+    EmailVerificationRequest, EmailVerificationVerify
+)
 from app.crud import user as user_crud
 from app.crud import audit_log as audit_crud
 from app.services.email_service import email_service
@@ -51,9 +55,12 @@ async def register(
         email=user_data.email,
         username=user_data.username,
         password=user_data.password,
-        full_name=user_data.full_name,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
         phone=user_data.phone,
         country=user_data.country,
+        id_number=user_data.id_number,
+        date_of_birth=user_data.date_of_birth,
     )
     new_user = await user_crud.create_user(db, user_create)
     
@@ -235,4 +242,173 @@ async def logout(
     )
     
     return {"message": "Logged out successfully"}
+
+
+# Email Verification Code Endpoints
+@router.post("/send-verification-code")
+async def send_verification_code(
+    request_data: EmailVerificationRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Send email verification code"""
+    
+    user = await user_crud.get_user_by_email(db, request_data.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    if user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already verified",
+        )
+    
+    # Generate verification code
+    verification_code = await user_crud.generate_email_verification_code(db, request_data.email)
+    if not verification_code:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate verification code",
+        )
+    
+    # Send verification code email
+    await email_service.send_verification_code_email(
+        request_data.email, 
+        verification_code, 
+        user.username
+    )
+    
+    return {"message": "Verification code sent to your email"}
+
+
+@router.post("/verify-email-code")
+async def verify_email_code(
+    request_data: EmailVerificationVerify,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Verify email with 6-digit code"""
+    
+    success = await user_crud.verify_email_code(db, request_data.email, request_data.code)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code",
+        )
+    
+    user = await user_crud.get_user_by_email(db, request_data.email)
+    
+    # Create audit log
+    try:
+        await audit_crud.create_audit_log(
+            db,
+            user_id=user.id,
+            action="email_verified_code",
+            resource_type="user",
+            resource_id=str(user.id),
+            ip_address=request.client.host if request.client else None,
+        )
+    except Exception as e:
+        print(f"Audit log error: {e}")
+    
+    return {"message": "Email verified successfully! You can now log in to your account."}
+
+
+# Password Reset Endpoints
+@router.post("/forgot-password")
+async def forgot_password(
+    request_data: PasswordResetRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Send password reset code"""
+    
+    user = await user_crud.get_user_by_email(db, request_data.email)
+    if not user:
+        # Don't reveal if user exists or not for security
+        return {"message": "If the email exists, a reset code has been sent"}
+    
+    # Generate reset code
+    reset_code = await user_crud.generate_password_reset_code(db, request_data.email)
+    if not reset_code:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate reset code",
+        )
+    
+    # Send reset code email
+    await email_service.send_password_reset_code_email(
+        request_data.email, 
+        reset_code, 
+        user.username
+    )
+    
+    # Create audit log
+    await audit_crud.create_audit_log(
+        db,
+        user_id=user.id,
+        action="password_reset_requested",
+        resource_type="user",
+        resource_id=str(user.id),
+        ip_address=request.client.host if request.client else None,
+    )
+    
+    return {"message": "If the email exists, a reset code has been sent"}
+
+
+@router.post("/verify-reset-code")
+async def verify_reset_code(
+    request_data: PasswordResetVerify,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Verify password reset code"""
+    
+    success = await user_crud.verify_password_reset_code(db, request_data.email, request_data.code)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code",
+        )
+    
+    return {"message": "Reset code verified successfully"}
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request_data: PasswordResetUpdate,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset password with verification code"""
+    
+    success = await user_crud.reset_password_with_code(
+        db, 
+        request_data.email, 
+        request_data.code, 
+        request_data.new_password
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code",
+        )
+    
+    user = await user_crud.get_user_by_email(db, request_data.email)
+    
+    # Create audit log
+    await audit_crud.create_audit_log(
+        db,
+        user_id=user.id,
+        action="password_reset_completed",
+        resource_type="user",
+        resource_id=str(user.id),
+        ip_address=request.client.host if request.client else None,
+    )
+    
+    return {"message": "Password reset successfully"}
 

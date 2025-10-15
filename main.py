@@ -7,7 +7,7 @@ from app.core.config import settings
 
 if __name__ == "__main__":
     # Debug: Print configuration to verify .env loading
-    print(f"🔧 Configuration loaded:")
+    print(f"Configuration loaded:")
     print(f"   Database URL: {settings.DATABASE_URL}")
     print(f"   CORS Origins: {settings.cors_origins_list}")
     print(f"   Environment: {settings.ENVIRONMENT}")

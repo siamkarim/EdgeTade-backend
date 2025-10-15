@@ -238,7 +238,8 @@ POST /api/v1/auth/register
   "email": "user@example.com",
   "username": "trader123",
   "password": "securepassword",
-  "full_name": "John Doe",
+  "first_name": "John",
+  "last_name": "Doe",
   "phone": "+1234567890",
   "country": "USA"
 }

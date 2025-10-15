@@ -16,13 +16,18 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     username = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    full_name = Column(String(255), nullable=True)
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
     
     # Profile
     phone = Column(String(20), nullable=True)
     country = Column(String(100), nullable=True)
     timezone = Column(String(50), nullable=True)
     profile_picture = Column(Text, nullable=True)
+    
+    # Additional profile fields from Figma
+    id_number = Column(String(50), nullable=True)  # ID Number field
+    date_of_birth = Column(DateTime(timezone=True), nullable=True)  # Date of Birth
     
     # Security
     is_active = Column(Boolean, default=True)
@@ -34,6 +39,14 @@ class User(Base):
     # Email verification
     email_verification_token = Column(String(255), nullable=True)
     email_verification_expires = Column(DateTime(timezone=True), nullable=True)
+    email_verification_code = Column(String(6), nullable=True)  # 6-digit verification code
+    email_verification_code_expires = Column(DateTime(timezone=True), nullable=True)
+    
+    # Password reset
+    password_reset_token = Column(String(255), nullable=True)
+    password_reset_expires = Column(DateTime(timezone=True), nullable=True)
+    password_reset_code = Column(String(6), nullable=True)  # 6-digit reset code
+    password_reset_code_expires = Column(DateTime(timezone=True), nullable=True)
     
     # KYC
     kyc_status = Column(String(20), default="pending")  # pending, approved, rejected
