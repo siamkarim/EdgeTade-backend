@@ -140,7 +140,7 @@ class Settings(BaseSettings):
     ENABLE_ADMIN_PANEL: bool = True
     ENABLE_API_DOCS: bool = True
     ENABLE_ANALYTICS: bool = True
-    REQUIRE_EMAIL_VERIFICATION: bool = True
+    REQUIRE_EMAIL_VERIFICATION: bool = True  # Re-enabled for production
     REQUIRE_KYC: bool = False  # Know Your Customer
     
     # ========== Market Data ==========

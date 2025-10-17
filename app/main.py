@@ -102,13 +102,34 @@ app = FastAPI(
     ],
 )
 
-# CORS Middleware
+# CORS Middleware - Comprehensive configuration for all endpoints
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=["*"],  # Allow all origins for testing
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-CSRFToken",
+        "X-API-Key",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "Cache-Control",
+        "Pragma",
+    ],
+    expose_headers=[
+        "Content-Range",
+        "X-Total-Count",
+        "X-Page-Count",
+        "X-Current-Page",
+    ],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 # Include API routes

@@ -32,11 +32,16 @@ async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User
 
 async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
     """Create new user"""
+    from app.core.config import settings
+    
     hashed_password = get_password_hash(user_data.password)
     
-    # Generate email verification token
-    verification_token = secrets.token_urlsafe(32)
-    verification_expires = datetime.utcnow() + timedelta(hours=24)
+    # Generate email verification token only if email verification is required
+    verification_token = None
+    verification_expires = None
+    if settings.REQUIRE_EMAIL_VERIFICATION:
+        verification_token = secrets.token_urlsafe(32)
+        verification_expires = datetime.utcnow() + timedelta(hours=24)
     
     db_user = User(
         email=user_data.email,
@@ -50,7 +55,7 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
         date_of_birth=user_data.date_of_birth,
         email_verification_token=verification_token,
         email_verification_expires=verification_expires,
-        is_verified=False,  # User needs to verify email
+        is_verified=not settings.REQUIRE_EMAIL_VERIFICATION,  # Auto-verify if email verification disabled
     )
     
     db.add(db_user)

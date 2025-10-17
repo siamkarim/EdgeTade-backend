@@ -52,8 +52,8 @@ router = APIRouter()
     Returns user information with `is_verified: false`. User must verify email before login.
     
     **Email Verification:**
-    After registration, a 6-digit verification code is sent to the user's email.
-    Use `/send-verification-code` and `/verify-email-code` to complete verification.
+    After registration, a 6-digit verification code is automatically sent to the user's email.
+    Use `/verify-email-code` to complete verification with the received code.
     """,
     responses={
         201: {
@@ -140,13 +140,18 @@ async def register(
     )
     new_user = await user_crud.create_user(db, user_create)
     
-    # Send verification email if required
+    # Send verification code email if required
     if settings.REQUIRE_EMAIL_VERIFICATION:
-        email_sent = await email_service.send_verification_email(
-            to_email=new_user.email,
-            verification_token=new_user.email_verification_token,
-            username=new_user.username
-        )
+        # Generate verification code
+        verification_code = await user_crud.generate_email_verification_code(db, new_user.email)
+        if verification_code:
+            email_sent = await email_service.send_verification_code_email(
+                to_email=new_user.email,
+                verification_code=verification_code,
+                username=new_user.username
+            )
+        else:
+            email_sent = False
         
         if not email_sent:
             # Log email failure but don't fail registration
@@ -160,6 +165,17 @@ async def register(
                 status="failed",
                 error_message="Failed to send verification email"
             )
+    else:
+        # Email verification disabled - user is automatically verified
+        await audit_crud.create_audit_log(
+            db,
+            user_id=new_user.id,
+            action="user_auto_verified",
+            resource_type="user",
+            resource_id=str(new_user.id),
+            ip_address=request.client.host if request.client else None,
+            details={"reason": "Email verification disabled for development"}
+        )
     
     # Create audit log
     await audit_crud.create_audit_log(
